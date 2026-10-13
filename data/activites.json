@@ -1,0 +1,54 @@
+{
+  "filiere": "Informatique — Bloc 2",
+  "activities": [
+    {
+      "id": "a1",
+      "name": "Programmation Python",
+      "personId": "p1",
+      "roomId": "r4",
+      "hours": 48
+    },
+    {
+      "id": "a2",
+      "name": "Bases de données",
+      "personId": "p2",
+      "roomId": "r1",
+      "hours": 36
+    },
+    {
+      "id": "a3",
+      "name": "Réseaux informatiques",
+      "personId": "p3",
+      "roomId": "r2",
+      "hours": 24
+    },
+    {
+      "id": "a4",
+      "name": "Mathématiques discrètes",
+      "personId": "p4",
+      "roomId": "r6",
+      "hours": 24
+    },
+    {
+      "id": "a5",
+      "name": "Anglais technique",
+      "personId": "p5",
+      "roomId": "r3",
+      "hours": 12
+    },
+    {
+      "id": "a6",
+      "name": "Projet intégré",
+      "personId": "p6",
+      "roomId": "r5",
+      "hours": 30
+    },
+    {
+      "id": "a7",
+      "name": "Conférence IA & société",
+      "personId": "p7",
+      "roomId": "r6",
+      "hours": 4
+    }
+  ]
+}
