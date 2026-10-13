@@ -1,0 +1,746 @@
+{
+  "meta": {
+    "exportedAt": "2026-10-13T09:25:25+02:00",
+    "exportedBy": "dispo"
+  },
+  "calendar": {
+    "name": "test1",
+    "startDate": "2026-10-14",
+    "endDate": "2026-12-31",
+    "weekDays": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday"
+    ],
+    "dayStart": "08:00",
+    "dayEnd": "18:00",
+    "slotDuration": 120,
+    "slotGap": 30,
+    "breaks": [
+      {
+        "name": "Pause de midi",
+        "start": "12:30",
+        "end": "13:30"
+      }
+    ],
+    "holidays": [
+      {
+        "date": "2026-11-09",
+        "label": null
+      },
+      {
+        "date": "2026-11-10",
+        "label": null
+      },
+      {
+        "date": "2026-11-11",
+        "label": null
+      },
+      {
+        "date": "2026-11-12",
+        "label": null
+      },
+      {
+        "date": "2026-11-13",
+        "label": null
+      },
+      {
+        "date": "2026-11-16",
+        "label": null
+      },
+      {
+        "date": "2026-11-17",
+        "label": null
+      },
+      {
+        "date": "2026-11-18",
+        "label": null
+      },
+      {
+        "date": "2026-11-19",
+        "label": null
+      },
+      {
+        "date": "2026-11-20",
+        "label": null
+      },
+      {
+        "date": "2026-11-23",
+        "label": null
+      }
+    ],
+    "defaultStatus": "available"
+  },
+  "slots": [
+    {
+      "id": "s1",
+      "start": "08:00",
+      "end": "10:00"
+    },
+    {
+      "id": "s2",
+      "start": "10:30",
+      "end": "12:30"
+    },
+    {
+      "id": "s3",
+      "start": "13:30",
+      "end": "15:30"
+    },
+    {
+      "id": "s4",
+      "start": "16:00",
+      "end": "18:00"
+    }
+  ],
+  "resources": [
+    {
+      "id": "cmv4bf60c000006icbd9q366x",
+      "type": "local",
+      "name": "A.101",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000106ica52kfqih",
+      "type": "local",
+      "name": "A.102",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000206icgdu9dlla",
+      "type": "local",
+      "name": "A.103",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000306icnb3zzxcb",
+      "type": "local",
+      "name": "A.201",
+      "owner": null,
+      "exceptions": [
+        {
+          "date": "2026-10-14",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "fretretredzezdez"
+        },
+        {
+          "date": "2026-10-14",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-10-14",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "fretretredzezdez"
+        },
+        {
+          "date": "2026-10-14",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "fretretredzezdez"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "teste 1"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "fretretre"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "fretretre"
+        },
+        {
+          "date": "2026-10-21",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-10-26",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-10-28",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-11-02",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-11-04",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-11-25",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-11-30",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-12-02",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-12-07",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-12-09",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-12-14",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-12-16",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-12-21",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-12-23",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        },
+        {
+          "date": "2026-12-28",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "gtrgtrgtr"
+        },
+        {
+          "date": "2026-12-30",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "xw xw"
+        }
+      ]
+    },
+    {
+      "id": "cmv4bf60c000406icq2adrtya",
+      "type": "local",
+      "name": "A.202",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000506icqdngx9ka",
+      "type": "local",
+      "name": "A.203",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000606ic6ov9ophk",
+      "type": "local",
+      "name": "A.301",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000706icqlpko6hw",
+      "type": "local",
+      "name": "A.302",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000806icntk3dq9w",
+      "type": "local",
+      "name": "B.010",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000906icnn4vp56r",
+      "type": "local",
+      "name": "B.011",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000a06icrs53njem",
+      "type": "local",
+      "name": "B.105",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000b06icocoqbszq",
+      "type": "local",
+      "name": "B.106",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000c06ic3se8jbgx",
+      "type": "local",
+      "name": "B.210",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000k06icvp35kle4",
+      "type": "local",
+      "name": "Bibliothèque, salle d'étude",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000d06icig96blym",
+      "type": "local",
+      "name": "C.001 (Auditoire)",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000e06ic8x9h9gzk",
+      "type": "local",
+      "name": "C.002 (Auditoire)",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000t06icty1f8rwt",
+      "type": "equipment",
+      "name": "Caméra de captation",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c001106ico3ocboby",
+      "type": "equipment",
+      "name": "Casque VR 1",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c001206icudvmulk0",
+      "type": "equipment",
+      "name": "Casque VR 2",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv49r1q0000106l50dbo6wab",
+      "type": "person",
+      "name": "Christian Loïc KOUNGOUE DIEPE",
+      "owner": "65303@etu.he2b.be",
+      "exceptions": [
+        {
+          "date": "2026-10-19",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-19",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-26",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-26",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-26",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-26",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-10-27",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "kk"
+        },
+        {
+          "date": "2026-10-27",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "kk"
+        },
+        {
+          "date": "2026-11-03",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "m"
+        },
+        {
+          "date": "2026-11-03",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "m"
+        },
+        {
+          "date": "2026-11-30",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-11-30",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-11-30",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-11-30",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-07",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-07",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-07",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-07",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-14",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-14",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-14",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-14",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-21",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-21",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-21",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-21",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-28",
+          "slotId": "s1",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-28",
+          "slotId": "s2",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-28",
+          "slotId": "s3",
+          "status": "unavailable",
+          "comment": "jj"
+        },
+        {
+          "date": "2026-12-28",
+          "slotId": "s4",
+          "status": "unavailable",
+          "comment": "jj"
+        }
+      ]
+    },
+    {
+      "id": "cmv4bf60c001306icacmiuefo",
+      "type": "equipment",
+      "name": "Enceinte Bluetooth",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000l06icshf3apk4",
+      "type": "local",
+      "name": "Gymnase",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000x06icnrjkg9u7",
+      "type": "equipment",
+      "name": "Imprimante 3D",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv49yo6f000106l4eo1amjca",
+      "type": "person",
+      "name": "Ingrid ATEMKENG DJOUDJEU",
+      "owner": "65506@etu.he2b.be",
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000w06ic2hckm5dm",
+      "type": "equipment",
+      "name": "Kit visioconférence",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000h06icn3sklwal",
+      "type": "local",
+      "name": "Labo électronique",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000f06ictjyr1f0r",
+      "type": "local",
+      "name": "Labo informatique 1",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000g06icivtw7qdk",
+      "type": "local",
+      "name": "Labo informatique 2",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000i06icfir3uoan",
+      "type": "local",
+      "name": "Labo réseaux",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bohdg001406ici4v490cy",
+      "type": "local",
+      "name": "MC103",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4dgs6i000306l8w9alyah8",
+      "type": "equipment",
+      "name": "MetaQuest",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000u06icftzdp8f4",
+      "type": "equipment",
+      "name": "Micro sans fil 1",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000v06ic2px34rai",
+      "type": "equipment",
+      "name": "Micro sans fil 2",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000p06ice192zyht",
+      "type": "equipment",
+      "name": "Ordinateur portable prêt 01",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000q06ice9541g77",
+      "type": "equipment",
+      "name": "Ordinateur portable prêt 02",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000r06ick3i5jphe",
+      "type": "equipment",
+      "name": "Ordinateur portable prêt 03",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000y06ichltdnwmt",
+      "type": "equipment",
+      "name": "Oscilloscope 1",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000z06icsdy2tas3",
+      "type": "equipment",
+      "name": "Oscilloscope 2",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000m06icn54irmv4",
+      "type": "equipment",
+      "name": "Projecteur Epson 1",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000n06ic5uke9hp7",
+      "type": "equipment",
+      "name": "Projecteur Epson 2",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000o06ic7tmpfnk5",
+      "type": "equipment",
+      "name": "Projecteur portable",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000j06icu35dbagg",
+      "type": "local",
+      "name": "Salle de réunion D.12",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c000s06ichv1smdrv",
+      "type": "equipment",
+      "name": "Tableau blanc mobile",
+      "owner": null,
+      "exceptions": []
+    },
+    {
+      "id": "cmv4bf60c001006icuk896y2b",
+      "type": "equipment",
+      "name": "Valise Arduino",
+      "owner": null,
+      "exceptions": []
+    }
+  ]
+}

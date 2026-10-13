@@ -65,6 +65,10 @@ QToolTip { background: #1f2d3d; color: #ffffff; border: none; padding: 6px 8px; 
 QLabel#Badge { background: #e03131; color: #ffffff; border-radius: 9px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
 
 #ContextBar { background: #ffffff; border-bottom: 1px solid #dfe5ec; }
+#OverlayChip { background: #eaf1fd; border: 1px solid #b9cdf7; border-radius: 13px; }
+#OverlayChip QLabel { background: transparent; color: #1c2733; }
+#OverlayChip QToolButton { background: transparent; border: none; border-radius: 9px; padding: 1px 4px; }
+#OverlayChip QToolButton:hover { background: #d4e2fb; }
 #Card { background: #ffffff; border: 1px solid #dfe5ec; border-radius: 10px; }
 #Rail { background: #f6f8fb; border-right: 1px solid #dfe5ec; }
 #Rail[dropHover="true"] { background: #fff4e2; border: 2px solid #f08c00; }

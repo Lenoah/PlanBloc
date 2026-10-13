@@ -150,10 +150,10 @@ class WeekNav(QFrame):
 
     def refresh(self) -> None:
         st = self.store
-        last = min(st.offset + VISIBLE_WEEKS, st.grid.weeks)
-        self.lab.setText(f"Semaines {st.offset + 1} – {last} / {st.grid.weeks}")
+        last = min(st.offset + VISIBLE_WEEKS, st.weeks)
+        self.lab.setText(f"Semaines {st.offset + 1} – {last} / {st.weeks}")
         self.prev.setEnabled(st.offset > 0)
-        self.next.setEnabled(st.offset + VISIBLE_WEEKS < st.grid.weeks)
+        self.next.setEnabled(st.offset + VISIBLE_WEEKS < st.weeks)
 
 
 def separator() -> QFrame:

@@ -1,18 +1,18 @@
 """Contenu des onglets."""
 from __future__ import annotations
 
-import html
 from pathlib import Path
 
-from PySide6.QtCore import QDate, Qt, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QButtonGroup, QComboBox, QDateEdit, QFileDialog, QFrame,
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QCursor, QKeySequence, QShortcut
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QButtonGroup, QComboBox, QFileDialog, QFrame,
                                QGridLayout, QHBoxLayout, QHeaderView, QLabel, QMessageBox, QPushButton,
-                               QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+                               QScrollArea, QTableWidget, QTableWidgetItem, QToolButton, QVBoxLayout, QWidget)
 
 from .. import theme
-from ..store import DAY_NAMES, KIND_LABEL, DataError, fmt_hours
+from ..store import DAY_NAMES, DataError, fmt_hours
 from .common import Dot, ElidedLabel, Gauge, WeekNav, button, dot_icon, label, separator
-from .grid import PlanningGrid
+from .grid import BlockCard, PlanningGrid
 from .rail import ActivityRail
 
 
@@ -57,6 +57,7 @@ class PlanningPage(QWidget):
         bl.addWidget(label("Filière", muted=True))
         self.filiere = QComboBox()
         self.filiere.setMinimumWidth(220)
+        self.filiere.currentIndexChanged.connect(self._filiere_chosen)
         bl.addWidget(self.filiere)
         bl.addWidget(separator())
         self.dot = Dot(theme.STATUS["ok"]["border"], 9)
@@ -64,6 +65,23 @@ class PlanningPage(QWidget):
         self.msg = ElidedLabel("")
         self.msg.setStyleSheet("color: #33414f; background: transparent;")
         bl.addWidget(self.msg, 1)
+
+        # Calque des disponibilités d'une ressource (raccourci D)
+        self.overlay_chip = QFrame()
+        self.overlay_chip.setObjectName("OverlayChip")
+        cl = QHBoxLayout(self.overlay_chip)
+        cl.setContentsMargins(10, 3, 4, 3)
+        cl.setSpacing(6)
+        self.overlay_lab = QLabel()
+        cl.addWidget(self.overlay_lab)
+        close = QToolButton()
+        close.setText("✕")
+        close.setToolTip("Fermer le calque (Échap)")
+        close.setCursor(Qt.CursorShape.PointingHandCursor)
+        close.clicked.connect(lambda: self.set_overlay(None))
+        cl.addWidget(close)
+        self.overlay_chip.hide()
+        bl.addWidget(self.overlay_chip)
         bl.addWidget(WeekNav(store))
         lay.addWidget(bar)
 
@@ -73,24 +91,62 @@ class PlanningPage(QWidget):
         rail = ActivityRail(store)
         rail.add_requested.connect(self.add_requested)
         body.addWidget(rail)
-        grid = PlanningGrid(store, editable=True)
-        grid.block_clicked.connect(self.block_requested)
-        body.addWidget(_grid_holder(grid), 1)
+        self.grid = PlanningGrid(store, editable=True)
+        self.grid.block_clicked.connect(self.block_requested)
+        body.addWidget(_grid_holder(self.grid), 1)
         lay.addLayout(body, 1)
+
+        QShortcut(QKeySequence("D"), self, activated=self._toggle_overlay)
+        QShortcut(QKeySequence(Qt.Key.Key_Escape), self, activated=lambda: self.set_overlay(None))
 
         store.message.connect(self.show_message)
         store.changed.connect(self._refresh_filiere)
         self._refresh_filiere()
 
     def _refresh_filiere(self) -> None:
-        current = self.store.filiere or "—"
-        if self.filiere.count() and self.filiere.itemText(0) == current:
+        st = self.store
+        items = list(st.filieres.items())
+        if [(self.filiere.itemData(i), self.filiere.itemText(i)) for i in range(self.filiere.count())] != items:
+            self.filiere.blockSignals(True)
+            self.filiere.clear()
+            for fid, name in items:
+                self.filiere.addItem(name, fid)
+            self.filiere.blockSignals(False)
+        idx = self.filiere.findData(st.filiere_id)
+        if idx >= 0 and idx != self.filiere.currentIndex():
+            self.filiere.blockSignals(True)
+            self.filiere.setCurrentIndex(idx)
+            self.filiere.blockSignals(False)
+
+    def _filiere_chosen(self, _i: int) -> None:
+        fid = self.filiere.currentData()
+        if fid:
+            self.store.set_filiere(fid)
+
+    def _toggle_overlay(self) -> None:
+        """Ressource sous le curseur : le nom survolé, sinon l'intervenant de la séance survolée."""
+        w, rid = QApplication.widgetAt(QCursor.pos()), None
+        while w is not None:
+            if w.property("rid") is not None:
+                rid = w.property("rid")
+                break
+            if isinstance(w, BlockCard):
+                rid = w.person_id
+                break
+            w = w.parentWidget()
+        if not rid:
+            self.show_message("incomplet", "Placez le curseur sur le nom d'un intervenant ou d'un local dans une "
+                                           "séance, puis appuyez sur D.")
             return
-        self.filiere.clear()
-        self.filiere.addItem(current)
-        # Prévu pour plus tard : autres filières / niveaux / classes.
-        self.filiere.addItem("Autres filières et classes (bientôt)")
-        self.filiere.model().item(1).setEnabled(False)
+        self.set_overlay(None if rid == self.grid.overlay_id else rid)
+
+    def set_overlay(self, rid: str | None) -> None:
+        self.grid.set_overlay(rid)
+        if rid:
+            self.overlay_lab.setText(f"Disponibilités : <b>{self.store.name(rid)}</b>")
+            self.overlay_chip.setToolTip("Vert : libre · Orange : déjà pris · Rouge : indisponible. Échap pour fermer.")
+            self.overlay_chip.setFixedWidth(self.overlay_chip.sizeHint().width())
+        self.overlay_chip.setVisible(bool(rid))
 
     def show_message(self, kind: str, text: str) -> None:
         self.dot.set_color(theme.STATUS.get(kind, theme.STATUS["incomplet"])["border"])
@@ -100,7 +156,8 @@ class PlanningPage(QWidget):
 
 class ActivitiesView(QWidget):
     add_requested = Signal()
-    HEADERS = ("Activité", "Intervenant", "Local habituel", "Durée", "Blocs placés", "Reste à placer")
+    HEADERS = ("Activité", "Filière", "Intervenant", "Local habituel", "Durée", "Séance", "Blocs placés",
+               "Reste à placer")
 
     def __init__(self, store, parent=None):
         super().__init__(parent)
@@ -126,9 +183,9 @@ class ActivitiesView(QWidget):
         self.table.setShowGrid(False)
         hh = self.table.horizontalHeader()
         hh.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        for i, mode in enumerate((QHeaderView.ResizeMode.Stretch, QHeaderView.ResizeMode.ResizeToContents,
-                                  QHeaderView.ResizeMode.ResizeToContents, QHeaderView.ResizeMode.ResizeToContents,
-                                  QHeaderView.ResizeMode.Stretch, QHeaderView.ResizeMode.ResizeToContents)):
+        R = QHeaderView.ResizeMode
+        for i, mode in enumerate((R.Stretch, R.ResizeToContents, R.ResizeToContents, R.ResizeToContents,
+                                  R.ResizeToContents, R.ResizeToContents, R.Stretch, R.ResizeToContents)):
             hh.setSectionResizeMode(i, mode)
         lay.addWidget(self.table, 1)
         store.changed.connect(self.refresh)
@@ -136,29 +193,34 @@ class ActivitiesView(QWidget):
 
     def refresh(self) -> None:
         st = self.store
-        self.summary.setText(f"{st.filiere} · {len(st.activities)} activités · blocs de {fmt_hours(st.block_hours)}")
-        self.table.setRowCount(len(st.activities))
-        for row, a in enumerate(st.activities):
+        order = {fid: i for i, fid in enumerate(st.filieres)}
+        acts = sorted(st.activities, key=lambda a: order.get(a.filiere_id, 99))
+        self.summary.setText(f"{len(st.filieres)} filières · {len(acts)} activités · "
+                             f"créneaux de {fmt_hours(st.block_hours)}")
+        self.table.setRowCount(len(acts))
+        for row, a in enumerate(acts):
             _, line = st.colors(a)
             name = QTableWidgetItem(dot_icon(line), a.name)
             f = name.font(); f.setBold(True); name.setFont(f)
             self.table.setItem(row, 0, name)
-            self.table.setItem(row, 1, QTableWidgetItem(st.name(a.person_id) or "—"))
-            self.table.setItem(row, 2, QTableWidgetItem(st.name(a.room_id) or "—"))
-            self.table.setItem(row, 3, QTableWidgetItem(fmt_hours(a.hours)))
+            self.table.setItem(row, 1, QTableWidgetItem(st.filieres.get(a.filiere_id, "—")))
+            self.table.setItem(row, 2, QTableWidgetItem(st.name(a.person_id) or "—"))
+            self.table.setItem(row, 3, QTableWidgetItem(st.name(a.room_id) or "—"))
+            self.table.setItem(row, 4, QTableWidgetItem(fmt_hours(a.hours)))
+            self.table.setItem(row, 5, QTableWidgetItem(fmt_hours(a.session_hours)))
             holder = QWidget()
             hl = QHBoxLayout(holder)
             hl.setContentsMargins(8, 0, 12, 0)
             g = Gauge()
             g.set_values(st.total_blocks(a), st.placed_count(a.id))
             hl.addWidget(g)
-            self.table.setCellWidget(row, 4, holder)
+            self.table.setCellWidget(row, 6, holder)
             left = st.remaining_hours(a)
             text = "Complet" if left <= 0 else f"{fmt_hours(left)} ({st.remaining_blocks(a)} blocs)"
             item = QTableWidgetItem(text)
             item.setForeground(Qt.GlobalColor.darkGreen if left <= 0 else Qt.GlobalColor.darkYellow)
             f = item.font(); f.setBold(True); item.setFont(f)
-            self.table.setItem(row, 5, item)
+            self.table.setItem(row, 7, item)
 
 
 class ResourceView(QWidget):
@@ -187,7 +249,7 @@ class ResourceView(QWidget):
         chip_scroll.setWidget(chips_box)
         chip_scroll.viewport().setStyleSheet("background: transparent;")
         bl.addWidget(chip_scroll, 1)
-        bl.addWidget(label("🔒  Consultation seule", size=12, muted=True))
+        bl.addWidget(label("🔒  Consultation seule · toutes filières", size=12, muted=True))
         bl.addWidget(WeekNav(store))
         lay.addWidget(bar)
         self.group = QButtonGroup(self)
@@ -227,7 +289,7 @@ class ResourceView(QWidget):
         for r in res:
             b = self.chips[r.id]
             b.setText(f"{r.name}   {self.store.count_for_resource(r.id)}")
-            b.setToolTip(r.info)
+            b.setToolTip(r.owner or "")
             b.setChecked(r.id == self.selected)
         if self.grid.resource_id != self.selected:
             self.grid.set_resource(self.selected)
@@ -242,8 +304,8 @@ class ConflictsView(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 18, 20, 0)
         lay.setSpacing(10)
-        lay.addWidget(label("Cliquez « Corriger » pour changer l'intervenant, le local ou le matériel du bloc. "
-                            "Vous pouvez aussi déplacer le bloc dans le planning.", color="#4a5a6b", wrap=True))
+        lay.addWidget(label("Cliquez « Corriger » pour changer l'intervenant, le local ou le matériel de la séance. "
+                            "Vous pouvez aussi la déplacer dans le planning.", color="#4a5a6b", wrap=True))
         box = QWidget()
         box.setObjectName("Transparent")
         self.list_lay = QVBoxLayout(box)
@@ -262,7 +324,7 @@ class ConflictsView(QWidget):
         st = self.store
         conflicts = st.conflicts()
         if not conflicts:
-            empty = QLabel("Aucun conflit : tous les blocs placés ont leurs ressources disponibles.")
+            empty = QLabel("Aucun conflit : toutes les séances placées ont leurs ressources disponibles.")
             empty.setObjectName("Card")
             empty.setStyleSheet("#Card { padding: 22px; color: #4a5a6b; }")
             self.list_lay.addWidget(empty)
@@ -284,6 +346,7 @@ class ConflictsView(QWidget):
             head = QHBoxLayout()
             head.setSpacing(10)
             head.addWidget(label(st.activity_name(b.activity_id), size=15, bold=True))
+            head.addWidget(label(st.filieres.get(st.filiere_of(b), ""), muted=True))
             head.addWidget(label(st.describe(b), color="#4a5a6b"))
             head.addStretch(1)
             col.addLayout(head)
@@ -301,7 +364,6 @@ class SettingsView(QWidget):
     def __init__(self, store, parent=None):
         super().__init__(parent)
         self.store = store
-        self._loading = False
         outer = QHBoxLayout(self)
         outer.setContentsMargins(20, 18, 20, 18)
         outer.setSpacing(16)
@@ -311,23 +373,16 @@ class SettingsView(QWidget):
         gl = QVBoxLayout(gcard)
         gl.setContentsMargins(18, 16, 18, 18)
         gl.setSpacing(12)
-        gl.addWidget(label("Grille", size=16, bold=True))
+        gl.addWidget(label("Calendrier", size=16, bold=True))
         form = QGridLayout()
         form.setHorizontalSpacing(14)
         form.setVerticalSpacing(10)
         form.setColumnStretch(1, 1)
-        self.date = QDateEdit()
-        self.date.setCalendarPopup(True)
-        self.date.setDisplayFormat("dd/MM/yyyy")
-        self.date.dateChanged.connect(self._date_changed)
-        self.weeks = QComboBox()
-        self.weeks.currentIndexChanged.connect(self._weeks_changed)
-        self.days = label()
-        self.slots = label(wrap=True)
-        for row, (text, w) in enumerate((("Date de début", self.date), ("Nombre de semaines", self.weeks),
-                                         ("Jours", self.days), ("Créneaux", self.slots))):
+        self.fields: dict[str, QLabel] = {}
+        for row, text in enumerate(("Nom", "Période", "Jours", "Créneaux", "Pauses", "Congés")):
             form.addWidget(label(text, color="#4a5a6b"), row, 0, Qt.AlignmentFlag.AlignTop)
-            form.addWidget(w, row, 1)
+            self.fields[text] = label(wrap=True)
+            form.addWidget(self.fields[text], row, 1)
         gl.addLayout(form)
         self.info = QLabel()
         self.info.setObjectName("Info")
@@ -347,20 +402,27 @@ class SettingsView(QWidget):
         self.files_lay = QVBoxLayout()
         self.files_lay.setSpacing(8)
         fl.addLayout(self.files_lay)
-        btns = QHBoxLayout()
+        imports = QHBoxLayout()
+        imp_dispo = button("Importer un export de disponibilités…")
+        imp_dispo.clicked.connect(self._import_dispo)
         imp = button("Importer un dossier…")
         imp.clicked.connect(self._import)
+        imports.addWidget(imp_dispo)
+        imports.addWidget(imp)
+        imports.addStretch(1)
+        btns = QHBoxLayout()
         opn = button("Ouvrir un planning…")
         opn.clicked.connect(self._open)
         save_as = button("Enregistrer sous…")
         save_as.clicked.connect(self._save_as)
         save = button("Enregistrer", "primary")
         save.clicked.connect(self._save)
-        for b in (imp, opn, save_as):
-            btns.addWidget(b)
+        btns.addWidget(opn)
+        btns.addWidget(save_as)
         btns.addStretch(1)
         btns.addWidget(save)
         fl.addSpacing(4)
+        fl.addLayout(imports)
         fl.addLayout(btns)
         fl.addStretch(1)
         outer.addWidget(fcard, 1)
@@ -369,23 +431,22 @@ class SettingsView(QWidget):
         self.refresh()
 
     def refresh(self) -> None:
-        st, g = self.store, self.store.grid
-        self._loading = True
-        self.date.setDate(QDate(g.start_date.year, g.start_date.month, g.start_date.day))
-        self.weeks.clear()
-        choices = sorted({6, 12, 18, 24, 36, g.weeks})
-        for n in choices:
-            self.weeks.addItem(f"{n} semaines", n)
-        self.weeks.setCurrentIndex(choices.index(g.weeks))
-        self._loading = False
-        self.days.setText(f"{DAY_NAMES[0]} → {DAY_NAMES[g.days - 1].lower()}")
-        self.slots.setText("   ·   ".join(s.label("–") for s in g.slots))
-        self.info.setText(f"Un bloc dure {fmt_hours(st.block_hours)} : c'est la durée des créneaux fixée par le groupe "
-                          f"« disponibilités ». Une activité de 48 h = {round(48 / st.block_hours)} blocs.")
+        st, cal = self.store, self.store.cal
+        self.fields["Nom"].setText(cal.name or "—")
+        self.fields["Période"].setText(f"{cal.start_date:%d/%m/%Y} → {cal.end_date:%d/%m/%Y}  ({st.weeks} semaines)")
+        self.fields["Jours"].setText(", ".join(DAY_NAMES[d] for d in st.days))
+        self.fields["Créneaux"].setText("   ·   ".join(s.label("–") for s in st.slots))
+        self.fields["Pauses"].setText("   ·   ".join(f"{b.name} {b.start:%H:%M}–{b.end:%H:%M}" for b in cal.breaks)
+                                      or "—")
+        self.fields["Congés"].setText(", ".join(f"{d:%d/%m}" for d in sorted(st.holidays)) or "—")
+        self.info.setText(f"Le calendrier vient du fichier du groupe « disponibilités » : il se modifie chez eux, "
+                          f"pas ici. Un créneau dure {fmt_hours(st.block_hours)} ; une séance de 4 h occupe "
+                          f"{max(1, round(4 / st.block_hours))} créneaux consécutifs du même jour.")
         self.folder.setText(f"Dossier : {st.data_dir}" if st.data_dir else "Aucun dossier chargé.")
         while self.files_lay.count():
             item = self.files_lay.takeAt(0)
             if item.widget():
+                item.widget().hide()
                 item.widget().deleteLater()
         for r in st.reports:
             row = QFrame()
@@ -405,24 +466,26 @@ class SettingsView(QWidget):
             h.addWidget(chip, 0, Qt.AlignmentFlag.AlignTop)
             self.files_lay.addWidget(row)
 
-    def _date_changed(self, qd: QDate) -> None:
-        if not self._loading:
-            self.store.set_grid(start_date=qd.toPython())
+    def _warn_bad(self, reports) -> None:
+        bad = [r for r in reports if not r.ok]
+        if bad:
+            QMessageBox.warning(self, "Fichiers invalides", "\n\n".join(r.detail for r in bad))
 
-    def _weeks_changed(self, _i: int) -> None:
-        n = self.weeks.currentData()
-        if not self._loading and n:
-            self.store.set_grid(weeks=int(n))
+    def _import_dispo(self) -> None:
+        start = str(self.store.data_dir or Path.home())
+        path, _ = QFileDialog.getOpenFileName(self, "Export du groupe « disponibilités »", start, "JSON (*.json)")
+        if not path:
+            return
+        try:
+            self._warn_bad(self.store.import_dispo(Path(path)))
+        except OSError as e:
+            QMessageBox.critical(self, "Import impossible", str(e))
 
     def _import(self) -> None:
         start = str(self.store.data_dir or Path.home())
         folder = QFileDialog.getExistingDirectory(self, "Dossier contenant les fichiers JSON", start)
-        if not folder:
-            return
-        reports = self.store.load_folder(Path(folder))
-        bad = [r for r in reports if not r.ok]
-        if bad:
-            QMessageBox.warning(self, "Fichiers invalides", "\n\n".join(r.detail for r in bad))
+        if folder:
+            self._warn_bad(self.store.load_folder(Path(folder)))
 
     def _open(self) -> None:
         start = str(self.store.data_dir or Path.home())

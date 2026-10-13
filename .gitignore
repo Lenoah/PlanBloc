@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environnements virtuels
+.venv/
+.venv-*/
+venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Éditeurs / système
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

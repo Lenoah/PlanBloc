@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (QComboBox, QDialog, QFileDialog, QFrame, QGridLay
                                QLineEdit, QMessageBox, QSpinBox, QTextBrowser, QVBoxLayout, QWidget)
 
 from .. import theme
-from ..store import DAY_NAMES, fmt_hours
+from ..store import fmt_hours
 from .common import button, label
 
 STATE_COLORS = {"libre": "#1d7a43", "indisponible": "#b42323", "pris": "#a15c00"}
@@ -26,7 +26,7 @@ class BlockDialog(QDialog):
     def __init__(self, store, block_id: str, parent=None):
         super().__init__(parent)
         self.store, self.block_id = store, block_id
-        self.setWindowTitle("Bloc d'activité")
+        self.setWindowTitle("Séance")
         self.setMinimumWidth(560)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
@@ -65,14 +65,14 @@ class BlockDialog(QDialog):
             form.addWidget(cb, row, 1)
             self.combos[field] = (cb, kind, placeholder)
         bl.addLayout(form)
-        bl.addWidget(label("Pour changer de créneau, glissez le bloc ailleurs dans le planning.", size=12, muted=True))
+        bl.addWidget(label("Pour changer de créneau, glissez la séance ailleurs dans le planning.", size=12, muted=True))
         root.addWidget(body)
 
         footer = QFrame()
         footer.setObjectName("DlgFooter")
         fl = QHBoxLayout(footer)
         fl.setContentsMargins(20, 12, 20, 12)
-        remove = button("Retirer ce bloc", "danger")
+        remove = button("Retirer cette séance", "danger")
         remove.clicked.connect(self._remove)
         done = button("Terminé", "primary")
         done.setDefault(True)
@@ -105,7 +105,7 @@ class BlockDialog(QDialog):
         fill, line = st.colors(act)
         self.header.setStyleSheet(f"#DlgHeader {{ background: {fill}; border-top: 5px solid {line}; }}")
         self.title.setText(act.name if act else "?")
-        self.when.setText(f"{st.describe(b)}  ({fmt_hours(st.block_hours)})")
+        self.when.setText(f"{st.describe(b)}  ({fmt_hours(b.span * st.block_hours)})")
         chk = st.check(b)
         s = theme.STATUS[chk.status]
         icon = "✔" if chk.status == "ok" else "⚠"
@@ -147,33 +147,48 @@ class NewActivityDialog(QDialog):
         lay.setContentsMargins(22, 20, 22, 18)
         lay.setSpacing(12)
         lay.addWidget(label("Nouvelle activité", size=18, bold=True))
-        lay.addWidget(label(f"Elle sera découpée en blocs de {fmt_hours(store.block_hours)} à placer dans le planning.",
-                            muted=True, wrap=True))
+        lay.addWidget(label(f"Chaque séance occupe un ou plusieurs créneaux de {fmt_hours(store.block_hours)} "
+                            "consécutifs dans la même journée.", muted=True, wrap=True))
         form = QGridLayout()
         form.setHorizontalSpacing(12)
         form.setVerticalSpacing(10)
         form.setColumnStretch(1, 1)
         self.name = QLineEdit()
         self.name.setPlaceholderText("ex. Systèmes d'exploitation")
+        self.filiere = QComboBox()
+        for fid, fname in store.filieres.items():
+            self.filiere.addItem(fname, fid)
+        self.filiere.setCurrentIndex(max(0, self.filiere.findData(store.filiere_id)))
         self.person = QComboBox()
         for r in store.resources["personne"]:
             self.person.addItem(r.name, r.id)
         self.room = QComboBox()
         for r in store.resources["local"]:
             self.room.addItem(r.name, r.id)
+        self.material = QComboBox()
+        self.material.addItem("— aucun —", "")
+        for r in store.resources["materiel"]:
+            self.material.addItem(r.name, r.id)
         step = max(1, round(store.block_hours))
         self.hours = QSpinBox()
         self.hours.setRange(step, 400)
         self.hours.setSingleStep(step)
         self.hours.setValue(max(step, 24 - 24 % step))
         self.hours.setSuffix(" h")
+        self.session = QComboBox()
+        for n in (1, 2):
+            self.session.addItem(f"{fmt_hours(n * store.block_hours)} ({n} créneau{'x' if n > 1 else ''})",
+                                 round(n * store.block_hours))
         self.blocks_lab = label(muted=True)
         self.hours.valueChanged.connect(self._update_blocks)
-        for row, (text, w) in enumerate((("Nom", self.name), ("Intervenant", self.person),
-                                         ("Local habituel", self.room), ("Durée totale", self.hours))):
+        self.session.currentIndexChanged.connect(self._update_blocks)
+        rows = (("Nom", self.name), ("Filière", self.filiere), ("Intervenant", self.person),
+                ("Local habituel", self.room), ("Matériel", self.material), ("Durée totale", self.hours),
+                ("Durée d'une séance", self.session))
+        for row, (text, w) in enumerate(rows):
             form.addWidget(label(text, color="#4a5a6b"), row, 0)
             form.addWidget(w, row, 1)
-        form.addWidget(self.blocks_lab, 4, 1)
+        form.addWidget(self.blocks_lab, len(rows), 1)
         lay.addLayout(form)
         row = QHBoxLayout()
         row.addStretch(1)
@@ -191,7 +206,9 @@ class NewActivityDialog(QDialog):
     def _update_blocks(self) -> None:
         import math
         n = math.ceil(self.hours.value() / self.store.block_hours - 1e-9)
-        self.blocks_lab.setText(f"= {n} blocs de {fmt_hours(self.store.block_hours)}")
+        per = max(1, round(self.session.currentData() / self.store.block_hours))
+        self.blocks_lab.setText(f"= {n} blocs de {fmt_hours(self.store.block_hours)}, "
+                                f"soit {math.ceil(n / per)} séances")
 
     def _accept(self) -> None:
         name = self.name.text().strip()
@@ -200,21 +217,29 @@ class NewActivityDialog(QDialog):
             self.name.setStyleSheet("border: 1px solid #e03131;")
             return
         self.store.add_activity(name, self.person.currentData() or "", self.room.currentData() or "",
-                                self.hours.value())
+                                self.hours.value(), self.session.currentData(), self.filiere.currentData() or "",
+                                self.material.currentData() or "")
         self.accept()
 
 
 def week_html(store, w: int) -> str:
-    g = store.grid
     esc = html.escape
-    head = "".join(f"<th align='left' bgcolor='#f3f5f8'>{DAY_NAMES[d]} {store.date_of(w, d):%d/%m}</th>"
-                   for d in range(g.days))
+    nd = len(store.days)
+    head = "".join(f"<th align='left' bgcolor='#f3f5f8'>{store.day_name(d)} {store.date_of(w, d):%d/%m}</th>"
+                   for d in range(nd))
     rows = []
-    for s, sl in enumerate(g.slots):
+    for s, sl in enumerate(store.slots):
         cells = []
-        for d in range(g.days):
+        for d in range(nd):
+            state = store.day_state(w, d)
+            if state != "ouvert":
+                text = esc(store.holidays.get(store.date_of(w, d), "Congé")) if state == "conge" else ""
+                cells.append(f"<td valign='top' bgcolor='#f3f5f8' style='color:#8a98a8'>{text or '&nbsp;'}</td>")
+                continue
             items = []
             for b in store.blocks_at(w, d, s):
+                if store.filiere_of(b) != store.filiere_id:
+                    continue
                 res = " · ".join(x for x in (store.name(b.room_id), store.name(b.person_id), store.name(b.material_id)) if x)
                 items.append(f"<p style='margin:0 0 4px 0'><b>{esc(store.activity_name(b.activity_id))}</b><br>"
                              f"<span style='color:#4a5a6b'>{esc(res)}</span></p>")
@@ -222,7 +247,7 @@ def week_html(store, w: int) -> str:
         rows.append(f"<tr><td valign='top' width='90' style='color:#4a5a6b'>{sl.label('–')}</td>{''.join(cells)}</tr>")
     return (f"<h2 style='margin:0'>Horaire — {esc(store.filiere)}</h2>"
             f"<p style='color:#4a5a6b; margin:2px 0 10px 0'>Semaine {w + 1} · "
-            f"{store.date_of(w, 0):%d/%m/%Y} – {store.date_of(w, g.days - 1):%d/%m/%Y}</p>"
+            f"{store.date_of(w, 0):%d/%m/%Y} – {store.date_of(w, nd - 1):%d/%m/%Y}</p>"
             "<table width='100%' border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse; border-color:#cfd7e0'>"
             f"<tr><th align='left' bgcolor='#f3f5f8'>Créneau</th>{head}</tr>{''.join(rows)}</table>"
             "<p style='color:#8a98a8; font-size:8pt'>Planning interne — non transmis au groupe « disponibilités ».</p>")
@@ -242,11 +267,11 @@ class ExportDialog(QDialog):
         top.addWidget(label("Aperçu avant impression", size=17, bold=True))
         top.addSpacing(12)
         self.week = QComboBox()
-        for w in range(store.grid.weeks):
+        for w in range(store.weeks):
             self.week.addItem(f"Semaine {w + 1} ({store.date_of(w, 0):%d/%m} – "
-                              f"{store.date_of(w, store.grid.days - 1):%d/%m})", w)
+                              f"{store.date_of(w, len(store.days) - 1):%d/%m})", w)
         self.week.addItem("Toutes les semaines (une page par semaine)", -1)
-        self.week.setCurrentIndex(min(store.offset, store.grid.weeks - 1))
+        self.week.setCurrentIndex(min(store.offset, store.weeks - 1))
         self.week.currentIndexChanged.connect(self._preview)
         top.addWidget(self.week)
         top.addStretch(1)
@@ -267,7 +292,7 @@ class ExportDialog(QDialog):
     def _html(self) -> str:
         w = self.week.currentData()
         if w == -1:
-            pages = [week_html(self.store, i) for i in range(self.store.grid.weeks)]
+            pages = [week_html(self.store, i) for i in range(self.store.weeks)]
             return "".join(f"<div style='page-break-after:always'>{p}</div>" for p in pages[:-1]) + pages[-1]
         return week_html(self.store, w)
 

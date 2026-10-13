@@ -40,6 +40,8 @@ class TopBar(QFrame):
         self.buttons: list[QPushButton] = []
         self.badge = QLabel()
         self.badge.setObjectName("Badge")
+        self.badge.setFixedHeight(18)
+        self.badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.badge.hide()
         for i, text in enumerate(labels):
             b = QPushButton(text)
@@ -50,7 +52,7 @@ class TopBar(QFrame):
             lay.addWidget(b)
             self.buttons.append(b)
             if text == "Conflits":
-                lay.addWidget(self.badge)
+                lay.addWidget(self.badge, 0, Qt.AlignmentFlag.AlignVCenter)
                 lay.addSpacing(4)
         self.group.idClicked.connect(self.tab_selected)
         lay.addStretch(1)

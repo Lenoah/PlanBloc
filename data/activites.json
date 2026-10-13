@@ -1,54 +1,113 @@
 {
-  "filiere": "Informatique — Bloc 2",
-  "activities": [
+  "filieres": [
     {
-      "id": "a1",
-      "name": "Programmation Python",
-      "personId": "p1",
-      "roomId": "r4",
-      "hours": 48
+      "id": "info-b2",
+      "name": "Informatique — Bloc 2",
+      "activities": [
+        {
+          "id": "a1",
+          "name": "Programmation Python",
+          "personId": "cmv49r1q0000106l50dbo6wab",
+          "roomId": "cmv4bf60c000f06ictjyr1f0r",
+          "hours": 48,
+          "sessionHours": 4
+        },
+        {
+          "id": "a2",
+          "name": "Bases de données",
+          "personId": "cmv49yo6f000106l4eo1amjca",
+          "roomId": "cmv4bf60c000306icnb3zzxcb",
+          "materialId": "cmv4bf60c000m06icn54irmv4",
+          "hours": 36,
+          "sessionHours": 2
+        },
+        {
+          "id": "a3",
+          "name": "Réseaux informatiques",
+          "personId": "cmv49r1q0000106l50dbo6wab",
+          "roomId": "cmv4bf60c000i06icfir3uoan",
+          "hours": 24,
+          "sessionHours": 4
+        },
+        {
+          "id": "a4",
+          "name": "Mathématiques discrètes",
+          "personId": "cmv49yo6f000106l4eo1amjca",
+          "roomId": "cmv4bf60c000d06icig96blym",
+          "hours": 24,
+          "sessionHours": 2
+        },
+        {
+          "id": "a5",
+          "name": "Anglais technique",
+          "personId": "cmv49yo6f000106l4eo1amjca",
+          "roomId": "cmv4bf60c000106ica52kfqih",
+          "hours": 12,
+          "sessionHours": 2
+        },
+        {
+          "id": "a6",
+          "name": "Projet intégré",
+          "personId": "cmv49r1q0000106l50dbo6wab",
+          "roomId": "cmv4bf60c000a06icrs53njem",
+          "hours": 30,
+          "sessionHours": 2
+        }
+      ]
     },
     {
-      "id": "a2",
-      "name": "Bases de données",
-      "personId": "p2",
-      "roomId": "r1",
-      "hours": 36
+      "id": "info-b1",
+      "name": "Informatique — Bloc 1",
+      "activities": [
+        {
+          "id": "i1",
+          "name": "Algorithmique",
+          "personId": "cmv49yo6f000106l4eo1amjca",
+          "roomId": "cmv4bf60c000g06icivtw7qdk",
+          "hours": 48,
+          "sessionHours": 4
+        },
+        {
+          "id": "i2",
+          "name": "Mathématiques générales",
+          "personId": "cmv49r1q0000106l50dbo6wab",
+          "roomId": "cmv4bf60c000e06ic8x9h9gzk",
+          "hours": 36,
+          "sessionHours": 2
+        }
+      ]
     },
     {
-      "id": "a3",
-      "name": "Réseaux informatiques",
-      "personId": "p3",
-      "roomId": "r2",
-      "hours": 24
-    },
-    {
-      "id": "a4",
-      "name": "Mathématiques discrètes",
-      "personId": "p4",
-      "roomId": "r6",
-      "hours": 24
-    },
-    {
-      "id": "a5",
-      "name": "Anglais technique",
-      "personId": "p5",
-      "roomId": "r3",
-      "hours": 12
-    },
-    {
-      "id": "a6",
-      "name": "Projet intégré",
-      "personId": "p6",
-      "roomId": "r5",
-      "hours": 30
-    },
-    {
-      "id": "a7",
-      "name": "Conférence IA & société",
-      "personId": "p7",
-      "roomId": "r6",
-      "hours": 4
+      "id": "elec-b1",
+      "name": "Électronique — Bloc 1",
+      "activities": [
+        {
+          "id": "e1",
+          "name": "Électronique analogique",
+          "personId": "cmv49r1q0000106l50dbo6wab",
+          "roomId": "cmv4bf60c000h06icn3sklwal",
+          "materialId": "cmv4bf60c000y06ichltdnwmt",
+          "hours": 36,
+          "sessionHours": 4
+        },
+        {
+          "id": "e2",
+          "name": "Physique appliquée",
+          "personId": "cmv49yo6f000106l4eo1amjca",
+          "roomId": "cmv4bf60c000606ic6ov9ophk",
+          "hours": 24,
+          "sessionHours": 2
+        },
+        {
+          "id": "e3",
+          "name": "Programmation Arduino",
+          "personId": "cmv49r1q0000106l50dbo6wab",
+          "roomId": "cmv4bf60c000h06icn3sklwal",
+          "materialId": "cmv4bf60c001006icuk896y2b",
+          "hours": 24,
+          "sessionHours": 4
+        }
+      ]
     }
   ]
 }

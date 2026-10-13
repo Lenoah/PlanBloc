@@ -5,6 +5,7 @@ from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsOpacityEffect, QHBoxLayout, QScrollArea,
                                QVBoxLayout, QWidget)
 
+from .. import theme
 from ..store import fmt_hours
 from . import dnd
 from .common import Dot, ElidedLabel, Gauge, button, label, repolish
@@ -31,9 +32,17 @@ class ActivityCard(QFrame):
         top.addWidget(name, 1)
         top.addWidget(label("⋮⋮", color="#8a98a8"))
         lay.addLayout(top)
-        person = label(store.name(act.person_id) or "Intervenant à définir", size=12, muted=True)
-        person.setContentsMargins(16, 1, 0, 7)
-        lay.addWidget(person)
+        info = QHBoxLayout()
+        info.setContentsMargins(16, 1, 0, 7)
+        info.setSpacing(6)
+        person = ElidedLabel(store.name(act.person_id) or "Intervenant à définir")
+        person.setStyleSheet(f"font-size: 12px; color: {theme.MUTED}; background: transparent;")
+        person.setToolTip(person.fullText())
+        info.addWidget(person, 1)
+        session = label(f"séance {fmt_hours(act.session_hours)}", size=11, color="#4a5a6b")
+        session.setToolTip(f"Chaque séance dure {fmt_hours(act.session_hours)}.")
+        info.addWidget(session)
+        lay.addLayout(info)
         gauge = Gauge()
         gauge.set_values(total, done)
         lay.addWidget(gauge)
@@ -53,7 +62,9 @@ class ActivityCard(QFrame):
             self.setToolTip("Toutes les heures de cette activité sont placées.")
         else:
             self.setCursor(Qt.CursorShape.OpenHandCursor)
-            self.setToolTip(f"Glissez sur un créneau pour poser un bloc de {fmt_hours(store.block_hours)}.")
+            span = store.session_span(act)
+            self.setToolTip(f"Glissez sur un créneau pour poser une séance de {fmt_hours(span * store.block_hours)}"
+                            + (f" ({span} créneaux consécutifs)." if span > 1 else "."))
 
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton and not self.full:
@@ -95,8 +106,9 @@ class ActivityRail(QFrame):
         head.addWidget(self.count)
         head.addStretch(1)
         lay.addLayout(head)
-        lay.addWidget(label("Glissez une activité sur un créneau pour poser un bloc. "
-                            "Glissez un bloc ici pour le retirer.", size=12, muted=True, wrap=True))
+        lay.addWidget(label("Glissez une activité sur un créneau : les cases se colorent en vert, orange ou "
+                            "rouge selon les disponibilités. Glissez une séance ici pour la retirer.",
+                            size=12, muted=True, wrap=True))
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -126,9 +138,10 @@ class ActivityRail(QFrame):
             if w:
                 w.hide()
                 w.deleteLater()
-        for act in self.store.activities:
+        acts = self.store.filiere_activities()
+        for act in acts:
             self.list_lay.insertWidget(self.list_lay.count() - 1, ActivityCard(self.store, act))
-        left = sum(self.store.remaining_hours(a) for a in self.store.activities)
+        left = sum(self.store.remaining_hours(a) for a in acts)
         self.count.setText(f"· {fmt_hours(left)} à placer")
 
     def _set_hover(self, on: bool) -> None:
