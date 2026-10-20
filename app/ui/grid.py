@@ -259,6 +259,8 @@ class PlanningGrid(QFrame):
         super().__init__(parent)
         self.setObjectName("Card")
         self.store, self.editable = store, editable
+        # Je garde le niveau de zoom du planning.
+        self.zoom = 1.0
         self.resource_id: str | None = None
         self.overlay_id: str | None = None
         self._drag: tuple[str, str, int, int] | None = None     # type, identifiant, partie, nb créneaux
@@ -323,6 +325,11 @@ class PlanningGrid(QFrame):
                 self.grid.setRowStretch(row, 1)
                 for ci in range(VISIBLE_WEEKS):
                     cell = Cell(self.editable, first_row=(s == 0))
+                    # Je règle la taille des cases selon le zoom.
+                    cell.setMinimumSize(
+                    round(110 * self.zoom),
+                    round(52 * self.zoom)
+                    )
                     cell.dropped.connect(self._on_drop)
                     cell.drag_hover.connect(self._on_hover)
                     self.grid.addWidget(cell, row, 2 + ci)
@@ -439,3 +446,36 @@ class PlanningGrid(QFrame):
 
     def _remove(self, bid: str) -> None:
         QTimer.singleShot(0, lambda: self.store.remove_block(bid))
+    def wheelEvent(self, event):
+    # Je zoome seulement si la touche Ctrl est enfoncée.
+     if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+        direction = event.angleDelta().y()
+
+        if direction == 0:
+            event.accept()
+            return
+
+        # Je limite le zoom entre 70 % et 160 %.
+        pas = 0.1 if direction > 0 else -0.1
+        nouveau_zoom = round(
+            max(0.7, min(1.6, self.zoom + pas)), 2
+        )
+
+        if nouveau_zoom != self.zoom:
+            self.zoom = nouveau_zoom
+
+            # Je redimensionne les cases existantes.
+            for cell in self.cells.values():
+                cell.setMinimumSize(
+                    round(110 * self.zoom),
+                    round(52 * self.zoom)
+                )
+
+            self.grid.invalidate()
+            self.updateGeometry()
+
+        event.accept()
+        return
+
+    # Sans Ctrl, je conserve le comportement normal.
+     super().wheelEvent(event)
