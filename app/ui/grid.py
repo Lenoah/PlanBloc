@@ -3,9 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QPoint, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QPainter, QPen
-from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout, QLabel, QToolButton,
-                               QVBoxLayout)
-
+from PySide6.QtWidgets import ( QApplication, QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QDialog, QRadioButton,QButtonGroup, QToolButton, QVBoxLayout,QGraphicsDropShadowEffect)
 from .. import theme
 from ..store import VISIBLE_WEEKS
 from . import dnd
@@ -249,6 +247,209 @@ class Cell(QFrame):
         if self.hover:
             p.setPen(QPen(QColor(theme.ACCENT), 3))
             p.drawRect(r.adjusted(1, 1, -2, -2))
+            
+
+class PlacementDialog(QDialog):
+    def __init__(self, nom_cours, jour, horaire, parent=None):
+        super().__init__(parent)
+
+        # Je prépare ma fenêtre.
+        self.setWindowTitle("Planifier une séance")
+        self.setFixedWidth(480)
+        self.setObjectName("PlacementDialog")
+        self.choix = "une_fois"
+
+        self.setStyleSheet("""
+            QDialog#PlacementDialog {
+                background-color: #ffffff;
+            }
+            QLabel {
+                background: transparent;
+                color: #1e293b;
+            }
+            QPushButton {
+                border: none;
+                border-radius: 9px;
+                padding: 12px 18px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QPushButton#CancelButton {
+                background-color: #eef2f7;
+                color: #475569;
+            }
+            QPushButton#CancelButton:hover {
+                background-color: #e2e8f0;
+            }
+            QPushButton#ConfirmButton {
+                background-color: #315edb;
+                color: white;
+            }
+            QPushButton#ConfirmButton:hover {
+                background-color: #244fc0;
+            }
+            QPushButton#ChoiceCard {
+                text-align: left;
+                border: 2px solid #e0e6ef;
+                border-radius: 12px;
+                background-color: white;
+                color: #1e293b;
+                padding: 15px;
+                font-size: 13px;
+            }
+            QPushButton#ChoiceCard:checked {
+                background-color: #eef3ff;
+                border: 2px solid #4468e9;
+            }
+            QPushButton#ChoiceCard:hover {
+                border: 2px solid #92aaf5;
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # Je crée l'en-tête bleu foncé.
+        header = QFrame()
+        header.setStyleSheet(
+            "background-color: #182b50;"
+        )
+
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(26, 24, 26, 25)
+        header_layout.setSpacing(8)
+
+        icone = QLabel("▦")
+        icone.setStyleSheet(
+            "color: #ffffff; font-size: 28px;"
+        )
+        header_layout.addWidget(icone)
+
+        titre = QLabel("Planifier une séance")
+        titre.setStyleSheet(
+            "color: white; font-size: 21px; font-weight: 700;"
+        )
+        header_layout.addWidget(titre)
+
+        sous_titre = QLabel(
+            "Personnalisez la fréquence de votre cours"
+        )
+        sous_titre.setStyleSheet(
+            "color: #c8d5e9; font-size: 12px;"
+        )
+        header_layout.addWidget(sous_titre)
+
+        layout.addWidget(header)
+
+        # Je crée le contenu principal.
+        contenu = QFrame()
+        contenu.setStyleSheet(
+            "QFrame { background-color: white; }"
+        )
+
+        corps = QVBoxLayout(contenu)
+        corps.setContentsMargins(26, 24, 26, 25)
+        corps.setSpacing(14)
+
+        # Je crée une carte avec les informations du cours.
+        info = QFrame()
+        info.setObjectName("CourseInfo")
+        info.setStyleSheet("""
+            QFrame#CourseInfo {
+                background-color: #f3f6fb;
+                border-radius: 12px;
+            }
+        """)
+
+        info_layout = QVBoxLayout(info)
+        info_layout.setContentsMargins(16, 15, 16, 15)
+        info_layout.setSpacing(9)
+
+        nom = QLabel("📘  " + nom_cours)
+        nom.setWordWrap(True)
+        nom.setStyleSheet(
+            "font-size: 15px; font-weight: 700; color: #172b4d;"
+        )
+        info_layout.addWidget(nom)
+
+        horaire_label = QLabel(
+            f"📅  {jour}          ◷  {horaire}"
+        )
+        horaire_label.setStyleSheet(
+            "font-size: 12px; color: #64748b;"
+        )
+        info_layout.addWidget(horaire_label)
+
+        corps.addWidget(info)
+
+        # Je crée le titre de la sélection.
+        label = QLabel("Fréquence du cours")
+        label.setStyleSheet(
+            "font-size: 14px; font-weight: 700; color: #172b4d;"
+        )
+        corps.addWidget(label)
+
+        # Je crée deux cartes sélectionnables.
+        self.option_unique = QPushButton(
+            "◉   Une seule séance\n"
+            "       Uniquement la semaine sélectionnée"
+        )
+        self.option_unique.setObjectName("ChoiceCard")
+        self.option_unique.setCheckable(True)
+        self.option_unique.setChecked(True)
+        self.option_unique.setMinimumHeight(78)
+
+        self.option_repetition = QPushButton(
+            "◷   Chaque semaine\n"
+            "       Même jour et même horaire"
+        )
+        self.option_repetition.setObjectName("ChoiceCard")
+        self.option_repetition.setCheckable(True)
+        self.option_repetition.setMinimumHeight(78)
+
+        # Je permets de sélectionner un seul choix.
+        groupe = QButtonGroup(self)
+        groupe.setExclusive(True)
+        groupe.addButton(self.option_unique)
+        groupe.addButton(self.option_repetition)
+
+        corps.addWidget(self.option_unique)
+        corps.addWidget(self.option_repetition)
+
+        # Je crée les boutons du bas.
+        boutons = QHBoxLayout()
+        boutons.setSpacing(10)
+
+        annuler = QPushButton("Annuler")
+        annuler.setObjectName("CancelButton")
+        annuler.clicked.connect(self.reject)
+
+        confirmer = QPushButton("Confirmer  →")
+        confirmer.setObjectName("ConfirmButton")
+        confirmer.clicked.connect(self.valider)
+        confirmer.setDefault(True)
+
+        boutons.addStretch()
+        boutons.addWidget(annuler)
+        boutons.addWidget(confirmer)
+
+        corps.addSpacing(10)
+        corps.addLayout(boutons)
+
+        layout.addWidget(contenu)
+
+    def valider(self):
+        # Je récupère le choix de l'utilisateur.
+        if self.option_repetition.isChecked():
+            self.choix = "repetition"
+        else:
+            self.choix = "une_fois"
+
+        self.accept()
+
+  
+
 
 
 class PlanningGrid(QFrame):
@@ -435,14 +636,55 @@ class PlanningGrid(QFrame):
             c = self.cells.get((cell.day, cell.slot - part + i, ci))
             if c:
                 c.set_hover(True)
-
+    
+    
+    
     def _on_drop(self, kind: str, ident: str, part: int, w: int, d: int, s: int) -> None:
         st = self.store
         start = s - part
+
         if kind == "new":
-            dnd.on_drop(lambda: st.place_new(ident, w, d, start))
+
+            def choisir_placement():
+                act = st.activity(ident)
+                if act is None:
+                    return
+
+                # Je vérifie si le cours peut être placé.
+                span = st.session_span(act)
+                if st.fits(w, d, start, span) is not None:
+                    st.place_new(ident, w, d, start)
+                    return
+
+                # Je récupère le jour et l'horaire.
+                jour = st.day_name(d)
+                horaire = st.time_label(start, span)
+
+                # J'ouvre ma nouvelle fenêtre.
+                fenetre = PlacementDialog(
+                    act.name, jour, horaire, self
+                )
+
+                if fenetre.exec() != QDialog.DialogCode.Accepted:
+                    return
+
+                # Je place une seule séance.
+                if fenetre.choix == "une_fois":
+                    st.place_new(ident, w, d, start)
+
+                # Je répète le cours chaque semaine.
+                elif fenetre.choix == "repetition":
+                    st.place_repeated(ident, w, d, start)
+
+            dnd.on_drop(choisir_placement)
+
         elif kind == "move":
-            dnd.on_drop(lambda: st.move_block(ident, w, d, start))
+            # Je conserve le déplacement des cours.
+            dnd.on_drop(
+                lambda: st.move_block(ident, w, d, start)
+            )
+
+
 
     def _remove(self, bid: str) -> None:
         QTimer.singleShot(0, lambda: self.store.remove_block(bid))

@@ -551,6 +551,31 @@ class Store(QObject):
                 f"Reste {fmt_hours(self.remaining_hours(act))}.")
         self._commit(self.check(b).status, text + self._issues(b))
         return b
+    
+    def place_repeated(self, act_id: str, w: int, d: int, s: int) -> int:
+        # Je place le même cours chaque semaine.
+        act = self.activity(act_id)
+        if act is None:
+            return 0
+
+        nombre = 0
+
+        for semaine in range(w, self.weeks):
+            # Je vérifie s'il reste des heures à placer.
+            if self.remaining_blocks(act) <= 0:
+                break
+
+            span = self.session_span(act)
+
+            # Je vérifie si le jour et le créneau sont autorisés.
+            if self.fits(semaine, d, s, span) is not None:
+                continue
+
+            # Je place le cours à la même heure.
+            if self.place_new(act_id, semaine, d, s) is not None:
+                nombre += 1
+
+        return nombre
 
     def move_block(self, bid: str, w: int, d: int, s: int) -> None:
         b = self.block(bid)
